@@ -17,6 +17,12 @@ def usage():
     print '\t-c <num> --crit=<num>\t\tCritical threshold'
     print '\t-w <num> --warn=<num>\t\tWarning threshold'
     print '\t-u <url> --url=<url>\t\tGraphite graph URL'
+    print '\t--host-uri=<host-uri>\t\tGraphite graph host including protocol'
+    print '\t-m <metric> \t\t\tThe required metric'
+    print '\t--m-host=<metric-host> \t\tHost for server whose metric is required'
+    print '\t--m-params=<metric-params> \tParams for metric extraction'
+    print '\t(If --host-uri is used than -m is also mandarory, --m-host and --m-params are optional)'
+    print ''
     print '\t--user\t\t\t\tUser name for Basic Http Auth conncetion'
     print '\t--pass\t\t\t\tPassword for Basic Http Auth conncetion'
     print '\t-r\t\t\t\tReverse - Alert when the value is UNDER warn/crit instead of OVER'
@@ -106,10 +112,12 @@ def get_value(user, password, url, seconds=0):
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv, 'hWULru:c:w:s:',
+        opts, args = getopt.getopt(argv, 'hWULru:c:w:s:m:',
                                     ['help', 'holt-winters', 'critupper',
                                      'critlower', 'url=', 'crit=', 'warn=',
-                                     'seconds=', 'd1=', 'd2=', "user=", "pass=", "reverse="])
+                                     'seconds=', 'd1=', 'd2=', "reverse=",
+                                     "user=", "pass=", "host-uri=", "m-host=",
+                                     "m-params="])
     except getopt.GetoptError, err:
         print str(err)
         sys.exit(STATE_UNKNOWN)
@@ -133,6 +141,16 @@ def main(argv):
             sys.exit()
         elif opt in ('-u', '--url'):
             url = arg
+
+        elif opt in ('-m'):
+            metric = arg
+        elif opt in ('--host-uri'):
+            host_uri = arg
+        elif opt in ('--m-host'):
+            metric_host = arg
+        elif opt in ('--m-params'):
+            metric_params = arg
+
         elif opt in ('-w', '--warn'):
             warn = float(arg)
         elif opt in ('-c', '--crit'):
@@ -155,6 +173,23 @@ def main(argv):
             user = arg
         elif opt in ('--pass'):
             password = arg
+
+
+    if (host_uri and metric):
+        url = host_uri + "/render?target="
+
+        if metric_host:
+            url += metric_host + "."
+
+        url += metric
+
+        if metric_params:
+            url += "&" + metric_params
+
+    elif (host_uri == None and metric) or (host_uri and metric == None):
+        usage()
+        sys.exit(STATE_UNKNOWN)
+
     if not hw and ((url == None) or (warn == None) or (crit == None)) \
             and not diff1 and not diff2:
         usage()

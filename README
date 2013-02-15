@@ -9,6 +9,12 @@ Options:
     -c <num> --crit=<num>       Critical threshold
     -w <num> --warn=<num>       Warning threshold
     -u <url> --url=<url>        Graphite graph URL
+    --host-uri=<host-uri>       Graphite graph host Include uri
+    --m-host=<metric-host>      Host for server whose metric is required
+    --m <metric>                The required metric
+    --m-params=<metric-params>  Params for metric extraction
+    (If -host-uri is used than -m is also mandarory, --m-host and --m-params are optional)
+
     --user                      User name for Basic Http Auth conncetion
     --pass                      Password for Basic Http Auth conncetion
     -r                          Reverse - Alert when the value is UNDER warn/crit instead of OVER
