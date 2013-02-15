@@ -9,7 +9,10 @@ Options:
     -c <num> --crit=<num>       Critical threshold
     -w <num> --warn=<num>       Warning threshold
     -u <url> --url=<url>        Graphite graph URL
+    --user                      User name for Basic Http Auth conncetion
+    --pass                      Password for Basic Http Auth conncetion
     -r                          Reverse - Alert when the value is UNDER warn/crit instead of OVER
+    --reverse                   Reverse only if set to "reverse" - Same as -r but allow easier integration
     -s <secs> --seconds=<secs>  Average over the last N seconds of data
     --d1 <url> --d2 <url>       Diff the latest values between two graphs
     -W --holt-winters           Perform a Holt-Winters check
