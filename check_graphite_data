@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
 import getopt
-import sys
 import urllib2
+import sys
+import socket
 
 STATE_OK = 0
 STATE_WARNING = 1
@@ -49,12 +50,15 @@ def pull_graphite_data(user, password, url):
         opener = urllib2.build_opener(auth_handler)
         urllib2.install_opener(opener)
 
-    usock = urllib2.urlopen(url)
-    data = usock.read()
-    usock.close()
+    try:
+        usock = urllib2.urlopen(url, timeout=20)
+        data = usock.read()
+        usock.close()
 
-    return data
-
+        return data
+    except socket.timeout:
+        print "Error connecting to Graphite: Timeout of 20 seconds reached"
+        sys.exit(STATE_UNKNOWN)
 
 def eval_graphite_data(data, seconds):
     """Get the most recent correct value from the data"""
