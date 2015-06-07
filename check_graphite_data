@@ -58,7 +58,7 @@ def pull_graphite_data(user, password, url, timeout):
 
         return data
     except socket.timeout:
-        print "Error connecting to Graphite: Timeout of 20 seconds reached"
+        print "Error connecting to Graphite: Timeout of %d seconds reached" % timeout
         sys.exit(STATE_UNKNOWN)
 
 def eval_graphite_data(data, seconds):
