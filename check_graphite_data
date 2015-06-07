@@ -138,6 +138,8 @@ def main(argv):
     critlower = None
     user = None
     password = None
+    host_uri = None
+    metric = None
 
     for opt, arg in opts:
         if opt in ('-h', '--help'):
