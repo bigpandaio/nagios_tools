@@ -36,8 +36,9 @@ def usage():
     print '\t-L --critlower\t\t\tLower Holt-Winters band breach causes a crit,'
     print '\t\t\t\t\t- breaching upper band causes a warn'
     print '\t(If neither -U nor -L are given, we will always warn)'
+    print '\t--timeout=TIMEOUT_IN_SECONDS, optional'
 
-def pull_graphite_data(user, password, url):
+def pull_graphite_data(user, password, url, timeout):
     """Pull down raw data from Graphite"""
     # Make sure the url ends with '&rawData'
     if not url.endswith('&rawData'):
@@ -51,7 +52,7 @@ def pull_graphite_data(user, password, url):
         urllib2.install_opener(opener)
 
     try:
-        usock = urllib2.urlopen(url, timeout=20)
+        usock = urllib2.urlopen(url, timeout=timeout)
         data = usock.read()
         usock.close()
 
@@ -91,10 +92,10 @@ def eval_graphite_data(data, seconds):
     return data_value
 
 
-def get_hw_value(user, password, url, seconds=0):
+def get_hw_value(user, password, url, timeout, seconds=0):
     """Get the Holt-Winters value from a Graphite graph"""
 
-    data = pull_graphite_data(user, password, url)
+    data = pull_graphite_data(user, password, url, timeout)
     for line in data.split():
         if line.startswith('holtWintersConfidenceUpper'):
             graphite_upper = eval_graphite_data(line, seconds)
@@ -140,6 +141,7 @@ def main(argv):
     password = None
     host_uri = None
     metric = None
+    timeout = 20
 
     for opt, arg in opts:
         if opt in ('-h', '--help'):
@@ -179,6 +181,9 @@ def main(argv):
             user = arg
         elif opt in ('--pass'):
             password = arg
+        elif opt in ('--timeout'):
+            timeout = int(arg)
+
 
 
     if (host_uri and metric):
@@ -206,7 +211,7 @@ def main(argv):
         sys.exit(STATE_UNKNOWN)
 
     if hw:
-        graphite_data, graphite_lower, graphite_upper = get_hw_value(user, password, url, seconds)
+        graphite_data, graphite_lower, graphite_upper = get_hw_value(user, password, url, timeout, seconds=seconds)
         print 'Current value: %s, lower band: %s, upper band: %s' % \
                (graphite_data, graphite_lower, graphite_upper)
         if (graphite_data > graphite_upper) or (graphite_data < graphite_lower):
