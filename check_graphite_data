@@ -44,14 +44,14 @@ def pull_graphite_data(user, password, url, timeout):
     if not url.endswith('&rawData'):
         url = url + '&rawData'
 
-    if user and password:
-        password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        password_mgr.add_password(None,uri=url, user=user, passwd=password)
-        auth_handler =urllib2.HTTPBasicAuthHandler(password_mgr)
-        opener = urllib2.build_opener(auth_handler)
-        urllib2.install_opener(opener)
-
     try:
+        if user and password:
+            password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+            password_mgr.add_password(None,uri=url, user=user, passwd=password)
+            auth_handler =urllib2.HTTPBasicAuthHandler(password_mgr)
+            opener = urllib2.build_opener(auth_handler)
+            urllib2.install_opener(opener)
+
         usock = urllib2.urlopen(url, timeout=timeout)
         data = usock.read()
         usock.close()
@@ -107,10 +107,10 @@ def get_hw_value(user, password, url, timeout, seconds=0):
     return graphite_data, graphite_lower, graphite_upper
 
 
-def get_value(user, password, url, seconds=0):
+def get_value(user, password, url, timeout, seconds=0):
     """Get the value from a Graphite graph"""
 
-    data = pull_graphite_data(user, password, url)
+    data = pull_graphite_data(user, password, url, timeout)
     data_value = eval_graphite_data(data, seconds)
     return data_value
 
@@ -122,7 +122,7 @@ def main(argv):
                                      'critlower', 'url=', 'crit=', 'warn=',
                                      'seconds=', 'd1=', 'd2=', "reverse=",
                                      "user=", "pass=", "host-uri=", "m-host=",
-                                     "m-params="])
+                                     "m-params=", 'timeout='])
     except getopt.GetoptError, err:
         print str(err)
         sys.exit(STATE_UNKNOWN)
@@ -222,11 +222,11 @@ def main(argv):
         else:
             sys.exit(STATE_OK)
     elif diff1 or diff2:
-        graphite_data1 = get_value(user, password, diff1, seconds)
-        graphite_data2 = get_value(user, password, diff2, seconds)
+        graphite_data1 = get_value(user, password, diff1, timeout, seconds)
+        graphite_data2 = get_value(user, password, diff2, timeout, seconds)
         graphite_data = abs(graphite_data1 - graphite_data2)
     else:
-        graphite_data = get_value(user, password, url, seconds)
+        graphite_data = get_value(user, password, url, timeout, seconds)
 
     print 'Current value: %s, warn threshold: %s, crit threshold: %s' % \
            (graphite_data, warn, crit)
